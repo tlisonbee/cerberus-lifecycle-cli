@@ -17,6 +17,7 @@
 package com.nike.cerberus.operation.core;
 
 import com.amazonaws.services.cloudformation.model.StackStatus;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.beust.jcommander.internal.Maps;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -160,6 +161,12 @@ public class CreateBaseOperation implements Operation<CreateBaseCommand> {
                 }
             } catch (IllegalStateException ise) { //NOPMD
                 // Don't care, fall through.
+            } catch (AmazonS3Exception ase) {
+                if (StringUtils.equals(ase.getErrorCode(), "NoSuchBucket")) {
+                    logger.warn("Detected config bucket does not exist. Skipping 'is runnable' check");
+                } else {
+                    return false;
+                }
             }
         }
 

@@ -46,6 +46,9 @@ public class CerberusCommand {
     @Parameter(names = {"--region", "-r"}, description = "The AWS region to execute against.", required = true)
     private String region;
 
+    @Parameter(names = {"--config-bucket", "-cb"}, description = "Optionally overrides the look up logic for dynamically determining the config bucket.")
+    private String configBucket;
+
     @Parameter(names = {"--debug"}, description = "Enables debug output.")
     private boolean debug;
 
@@ -65,6 +68,10 @@ public class CerberusCommand {
 
     public String getRegion() {
         return region;
+    }
+
+    public String getConfigBucket() {
+        return configBucket;
     }
 
     public boolean isDebug() {

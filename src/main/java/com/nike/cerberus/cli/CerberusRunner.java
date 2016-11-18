@@ -97,7 +97,7 @@ public class CerberusRunner {
                     commander.usage(commandName);
                 } else {
                     final Injector injector = Guice.createInjector(new CerberusModule(cerberusCommand.getProxyDelegate(),
-                            cerberusCommand.getEnvironment(), cerberusCommand.getRegion()));
+                            cerberusCommand.getEnvironment(), cerberusCommand.getRegion(), cerberusCommand.getConfigBucket()));
 
                     final Operation operation = injector.getInstance(command.getOperationClass());
 

@@ -90,10 +90,13 @@ public class CerberusModule extends AbstractModule {
 
     private final String regionName;
 
-    public CerberusModule(ProxyDelegate proxyDelegate, String environmentName, String regionName) {
+    private final String configBucket;
+
+    public CerberusModule(ProxyDelegate proxyDelegate, String environmentName, String regionName, String configBucket) {
         this.proxyDelegate = proxyDelegate;
         this.environmentName = environmentName;
         this.regionName = regionName;
+        this.configBucket = configBucket;
     }
 
     /**
@@ -206,6 +209,10 @@ public class CerberusModule extends AbstractModule {
     }
 
     private Optional<String> findBucket(final String environmentName) {
+        if (StringUtils.isNotBlank(configBucket)) {
+            return Optional.of(configBucket);
+        }
+
         AmazonS3Client s3Client = new AmazonS3Client();
         List<Bucket> buckets = s3Client.listBuckets();
 
