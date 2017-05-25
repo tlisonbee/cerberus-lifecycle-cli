@@ -109,6 +109,7 @@ public class CreateGatewayClusterOperation implements Operation<CreateGatewayClu
         gatewayParameters.getSslConfigParameters().setSslCertificateArn(gatewayServerCertificateArn.get());
         gatewayParameters.getSslConfigParameters().setSslCertificateId(gatewayServerCertificateId.get());
 
+// Validate AMI Id here
         gatewayParameters.getLaunchConfigParameters().setAmiId(command.getStackDelegate().getAmiId());
         gatewayParameters.getLaunchConfigParameters().setInstanceSize(command.getStackDelegate().getInstanceSize());
         gatewayParameters.getLaunchConfigParameters().setKeyPairName(command.getStackDelegate().getKeyPairName());

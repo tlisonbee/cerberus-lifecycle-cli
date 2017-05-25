@@ -107,6 +107,7 @@ public class CreateVaultClusterOperation implements Operation<CreateVaultCluster
         vaultParameters.getSslConfigParameters().setCertPublicKey(pubKey.get());
         vaultParameters.getSslConfigParameters().setSslCertificateArn(vaultServerCertificateArn.get());
 
+// Validate AMI Id here
         vaultParameters.getLaunchConfigParameters().setAmiId(command.getStackDelegate().getAmiId());
         vaultParameters.getLaunchConfigParameters().setInstanceSize(command.getStackDelegate().getInstanceSize());
         vaultParameters.getLaunchConfigParameters().setKeyPairName(command.getStackDelegate().getKeyPairName());

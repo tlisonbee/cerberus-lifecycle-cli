@@ -174,6 +174,7 @@ public class UpdateStackOperation implements Operation<UpdateStackCommand> {
                 ec2UserDataService.getUserData(stackName, command.getOwnerGroup()));
 
         if (StringUtils.isNotBlank(command.getAmiId())) {
+            // Validate AMI ID here
             launchConfigParameters.getLaunchConfigParameters().setAmiId(command.getAmiId());
         }
 

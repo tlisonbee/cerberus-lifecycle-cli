@@ -81,6 +81,13 @@ public class CreateConsulClusterOperation implements Operation<CreateConsulClust
         final String uniqueStackName = String.format("%s-%s", StackName.CONSUL.getName(), uuidSupplier.get());
         final BaseOutputs baseOutputs = configStore.getBaseStackOutputs();
 
+        // Make sure the given AmiId is for CMS component. Check if it contains required tag
+        if (!ec2Service.isAmiWithTagExist(command.getStackDelegate().getAmiId(),
+                                          ConfigConstants.CERBERUS_AMI_TAG_NAME,
+                                          ConfigConstants.CMS_AMI_TAG_VALUE)) {
+            throw new IllegalStateException("AMI check failed!");
+        }
+
         final ConsulParameters consulParameters = new ConsulParameters()
                 .setInstanceProfileName(baseOutputs.getConsulInstanceProfileName())
                 .setConsulClientSgId(baseOutputs.getConsulClientSgId())
@@ -91,6 +98,7 @@ public class CreateConsulClusterOperation implements Operation<CreateConsulClust
                 .setVpcSubnetIdForAz2(baseOutputs.getVpcSubnetIdForAz2())
                 .setVpcSubnetIdForAz3(baseOutputs.getVpcSubnetIdForAz3());
 
+// Validate AMI Id here
         consulParameters.getLaunchConfigParameters().setAmiId(command.getStackDelegate().getAmiId());
         consulParameters.getLaunchConfigParameters().setInstanceSize(command.getStackDelegate().getInstanceSize());
         consulParameters.getLaunchConfigParameters().setKeyPairName(command.getStackDelegate().getKeyPairName());

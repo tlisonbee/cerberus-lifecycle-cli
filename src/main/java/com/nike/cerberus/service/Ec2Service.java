@@ -25,6 +25,9 @@ import com.amazonaws.services.ec2.model.DescribeKeyPairsRequest;
 import com.amazonaws.services.ec2.model.DescribeKeyPairsResult;
 import com.amazonaws.services.ec2.model.ImportKeyPairRequest;
 import com.amazonaws.services.ec2.model.ImportKeyPairResult;
+import com.amazonaws.services.ec2.model.DescribeImagesRequest;
+import com.amazonaws.services.ec2.model.DescribeImagesResult;
+import com.amazonaws.services.ec2.model.Filter;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -88,5 +91,29 @@ public class Ec2Service {
                 .stream()
                 .filter(az -> AvailabilityZoneState.Available == AvailabilityZoneState.fromValue(az.getState()))
                 .map(AvailabilityZone::getZoneName).collect(Collectors.toList());
+    }
+
+    /**
+     * Validates if the given AMI has given tag and value.
+     *
+     * @return true if matches otherwise false
+     */
+    public boolean isAmiWithTagExist(final String amiId, final String tagName, final String tagValue) {
+
+        // final DescribeImagesRequest request = new DescribeImagesRequest().withImageIds(amiId);
+        DescribeImagesRequest request = new DescribeImagesRequest()
+            .withFilters(new Filter().withName(tagName).withValues(tagValue))
+            .withFilters(new Filter().withName("image-id").withValues(amiId));
+
+        try {
+            final DescribeImagesResult result = ec2Client.describeImages(request);
+            return result.getImages().size() > 0;
+        } catch (final AmazonServiceException ase) {
+            if (ase.getErrorCode() == "InvalidAMIID.NotFound") {
+                return false;
+            }
+
+            throw ase;
+        }
     }
 }

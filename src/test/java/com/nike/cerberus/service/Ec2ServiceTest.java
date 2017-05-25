@@ -26,6 +26,10 @@ import com.amazonaws.services.ec2.model.DescribeKeyPairsResult;
 import com.amazonaws.services.ec2.model.ImportKeyPairRequest;
 import com.amazonaws.services.ec2.model.ImportKeyPairResult;
 import com.amazonaws.services.ec2.model.KeyPairInfo;
+import com.amazonaws.services.ec2.model.DescribeImagesRequest;
+import com.amazonaws.services.ec2.model.DescribeImagesResult;
+import com.amazonaws.services.ec2.model.Filter;
+import com.amazonaws.services.ec2.model.Image;
 import org.junit.Test;
 
 import java.util.List;
@@ -158,4 +162,97 @@ public class Ec2ServiceTest {
         assertEquals(zoneName, results.get(0));
     }
 
+    @Test
+    public void isAmiWithTagExistTrue() {
+        AmazonEC2 ec2Client = mock(AmazonEC2.class);
+        Ec2Service ec2Service = new Ec2Service(ec2Client);
+
+        String amiId = "ami-1234abcd";
+        String tagName = "sometag";
+        String tagValue = "someval";
+
+        when(ec2Client.describeImages(
+                new DescribeImagesRequest()
+                        .withFilters(new Filter().withName(tagName).withValues(tagValue))
+                        .withFilters(new Filter().withName("image-id").withValues(amiId))
+                )
+        ).thenReturn(
+                new DescribeImagesResult().withImages(new Image())
+                );
+
+        // invoke method under test
+        assertTrue(ec2Service.isAmiWithTagExist(amiId, tagName, tagValue));
+    }
+
+    @Test
+    public void isAmiWithTagExistFalse() {
+        AmazonEC2 ec2Client = mock(AmazonEC2.class);
+        Ec2Service ec2Service = new Ec2Service(ec2Client);
+
+        String amiId = "ami-1234abcd";
+        String tagName = "sometag";
+        String tagValue = "someval";
+
+        when(ec2Client.describeImages(
+                new DescribeImagesRequest()
+                        .withFilters(new Filter().withName(tagName).withValues(tagValue))
+                        .withFilters(new Filter().withName("image-id").withValues(amiId))
+                )
+        ).thenReturn(
+                new DescribeImagesResult()
+                );
+
+        // invoke method under test
+        assertFalse(ec2Service.isAmiWithTagExist(amiId, tagName, tagValue));
+    }
+
+    @Test
+    public void isAmiWithTagExistNotFound() {
+        AmazonEC2 ec2Client = mock(AmazonEC2.class);
+        Ec2Service ec2Service = new Ec2Service(ec2Client);
+
+        String amiId = "ami-1234abcd";
+        String tagName = "sometag";
+        String tagValue = "someval";
+
+        AmazonServiceException ex = new AmazonServiceException("fake-exception");
+        ex.setErrorCode("InvalidAMIID.NotFound");
+
+        when(ec2Client.describeImages(
+                new DescribeImagesRequest()
+                        .withFilters(new Filter().withName(tagName).withValues(tagValue))
+                        .withFilters(new Filter().withName("image-id").withValues(amiId))
+                )
+        ).thenThrow(ex);
+
+        // invoke method under test
+        assertFalse(ec2Service.isAmiWithTagExist(amiId, tagName, tagValue));
+    }
+
+    @Test
+    public void isAmiWithTagExistThrowException() {
+        AmazonEC2 ec2Client = mock(AmazonEC2.class);
+        Ec2Service ec2Service = new Ec2Service(ec2Client);
+
+        String amiId = "ami-1234abcd";
+        String tagName = "sometag";
+        String tagValue = "someval";
+        String unknownAwsExMessage = "Unknown AWS exception message";
+
+        when(ec2Client.describeImages(
+                new DescribeImagesRequest()
+                        .withFilters(new Filter().withName(tagName).withValues(tagValue))
+                        .withFilters(new Filter().withName("image-id").withValues(amiId))
+                )
+        ).thenThrow(new AmazonServiceException(unknownAwsExMessage));
+
+        try {
+            // invoke method under test
+            ec2Service.isAmiWithTagExist(amiId, tagName, tagValue);
+            fail("Expected exception message '" + unknownAwsExMessage + "'not received");
+        } catch (AmazonServiceException ex) {
+            // pass
+            assertEquals(unknownAwsExMessage, ex.getErrorMessage());
+        }
+    }
 }
