@@ -64,6 +64,8 @@ public class UpdateStackOperation implements Operation<UpdateStackCommand> {
 
     private final Map<StackName, String> stackTemplatePathMap;
 
+    private final Map<StackName, String> stackAmiTagValueMap;
+
     private final ConfigStore configStore;
 
     private final CloudFormationService cloudFormationService;
@@ -98,6 +100,13 @@ public class UpdateStackOperation implements Operation<UpdateStackCommand> {
         stackTemplatePathMap.put(StackName.VAULT, ConfigConstants.VAULT_STACK_TEMPLATE_PATH);
         stackTemplatePathMap.put(StackName.CMS, ConfigConstants.CMS_STACK_TEMPLATE_PATH);
         stackTemplatePathMap.put(StackName.GATEWAY, ConfigConstants.GATEWAY_STACK_TEMPLATE_PATH);
+
+        stackAmiTagValueMap = new HashMap<>();
+        stackAmiTagValueMap.put(StackName.CONSUL, ConfigConstants.CONSUL_AMI_TAG_VALUE);
+        stackAmiTagValueMap.put(StackName.VAULT, ConfigConstants.VAULT_AMI_TAG_VALUE);
+        stackAmiTagValueMap.put(StackName.CMS, ConfigConstants.CMS_AMI_TAG_VALUE);
+        stackAmiTagValueMap.put(StackName.GATEWAY, ConfigConstants.GATEWAY_AMI_TAG_VALUE);
+
     }
 
     @Override
@@ -106,19 +115,22 @@ public class UpdateStackOperation implements Operation<UpdateStackCommand> {
         final Class<? extends LaunchConfigParameters> parametersClass = stackParameterMap.get(command.getStackName());
         final Map<String, String> parameters;
 
-        // Make sure the given AmiId is for CMS component. Check if it contains required tag
-        if (!ec2Service.isAmiWithTagExist(command.getAmiId(),
-                                          ConfigConstants.CERBERUS_AMI_TAG_NAME,
-                                          ConfigConstants.CMS_AMI_TAG_VALUE)) {
-            throw new IllegalStateException("AMI check failed!");
-        }
-
         if (parametersClass != null) {
             parameters = getUpdateLaunchConfigParameters(command.getStackName(), command, parametersClass);
         } else if (StackName.BASE == command.getStackName()) {
             parameters = getUpdatedBaseStackParameters(command);
         } else {
             throw new IllegalArgumentException("The specified stack does not support the update stack command!");
+        }
+
+        // Make sure the given AmiId is for this component. Check if it contains required tag
+        // There is no AMI for Base.
+        if ( StackName.BASE != command.getStackName() && !ec2Service.isAmiWithTagExist(
+                                              command.getAmiId(),
+                                              ConfigConstants.CERBERUS_AMI_TAG_NAME,
+                                              stackAmiTagValueMap.get(command.getStackName()))) {
+                throw new IllegalStateException("AMI check failed!");
+
         }
 
         parameters.putAll(command.getDynamicParameters());

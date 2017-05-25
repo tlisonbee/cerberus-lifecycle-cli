@@ -89,7 +89,7 @@ public class CreateConsulClusterOperation implements Operation<CreateConsulClust
         // Make sure the given AmiId is for CMS component. Check if it contains required tag
         if (!ec2Service.isAmiWithTagExist(command.getStackDelegate().getAmiId(),
                                           ConfigConstants.CERBERUS_AMI_TAG_NAME,
-                                          ConfigConstants.CMS_AMI_TAG_VALUE)) {
+                                          ConfigConstants.CONSUL_AMI_TAG_VALUE)) {
             throw new IllegalStateException("AMI check failed!");
         }
 
