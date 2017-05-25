@@ -30,6 +30,7 @@ import com.nike.cerberus.operation.Operation;
 import com.nike.cerberus.operation.UnexpectedCloudFormationStatusException;
 import com.nike.cerberus.service.CloudFormationService;
 import com.nike.cerberus.service.Ec2UserDataService;
+import com.nike.cerberus.service.Ec2Service;
 import com.nike.cerberus.store.ConfigStore;
 import com.nike.cerberus.util.UuidSupplier;
 import org.apache.commons.lang3.StringUtils;
@@ -55,6 +56,8 @@ public class CreateConsulClusterOperation implements Operation<CreateConsulClust
 
     private final Ec2UserDataService ec2UserDataService;
 
+    private final Ec2Service ec2Service;
+
     private final UuidSupplier uuidSupplier;
 
     private final ConfigStore configStore;
@@ -65,12 +68,14 @@ public class CreateConsulClusterOperation implements Operation<CreateConsulClust
     public CreateConsulClusterOperation(final EnvironmentMetadata environmentMetadata,
                                final CloudFormationService cloudFormationService,
                                final Ec2UserDataService ec2UserDataService,
+                               final Ec2Service ec2Service,
                                final UuidSupplier uuidSupplier,
                                final ConfigStore configStore,
                                @Named(CF_OBJECT_MAPPER) final ObjectMapper cloudformationObjectMapper) {
         this.environmentMetadata = environmentMetadata;
         this.cloudFormationService = cloudFormationService;
         this.ec2UserDataService = ec2UserDataService;
+        this.ec2Service = ec2Service;
         this.uuidSupplier = uuidSupplier;
         this.configStore = configStore;
         this.cloudformationObjectMapper = cloudformationObjectMapper;
@@ -98,7 +103,6 @@ public class CreateConsulClusterOperation implements Operation<CreateConsulClust
                 .setVpcSubnetIdForAz2(baseOutputs.getVpcSubnetIdForAz2())
                 .setVpcSubnetIdForAz3(baseOutputs.getVpcSubnetIdForAz3());
 
-// Validate AMI Id here
         consulParameters.getLaunchConfigParameters().setAmiId(command.getStackDelegate().getAmiId());
         consulParameters.getLaunchConfigParameters().setInstanceSize(command.getStackDelegate().getInstanceSize());
         consulParameters.getLaunchConfigParameters().setKeyPairName(command.getStackDelegate().getKeyPairName());

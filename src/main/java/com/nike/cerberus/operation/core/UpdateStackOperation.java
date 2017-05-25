@@ -37,6 +37,7 @@ import com.nike.cerberus.operation.Operation;
 import com.nike.cerberus.operation.UnexpectedCloudFormationStatusException;
 import com.nike.cerberus.service.CloudFormationService;
 import com.nike.cerberus.service.Ec2UserDataService;
+import com.nike.cerberus.service.Ec2Service;
 import com.nike.cerberus.store.ConfigStore;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -71,15 +72,19 @@ public class UpdateStackOperation implements Operation<UpdateStackCommand> {
 
     private final Ec2UserDataService ec2UserDataService;
 
+    private final Ec2Service ec2Service;
+
     @Inject
     public UpdateStackOperation(final ConfigStore configStore,
                                 final CloudFormationService cloudFormationService,
                                 @Named(CF_OBJECT_MAPPER) final ObjectMapper cloudformationObjectMapper,
+                                final Ec2Service ec2Service,
                                 final Ec2UserDataService ec2UserDataService) {
         this.configStore = configStore;
         this.cloudFormationService = cloudFormationService;
         this.cloudformationObjectMapper = cloudformationObjectMapper;
         this.ec2UserDataService = ec2UserDataService;
+        this.ec2Service = ec2Service;
 
         stackParameterMap = new HashMap<>();
         stackParameterMap.put(StackName.CONSUL, ConsulParameters.class);
@@ -100,6 +105,13 @@ public class UpdateStackOperation implements Operation<UpdateStackCommand> {
         final String stackId = configStore.getStackId(command.getStackName());
         final Class<? extends LaunchConfigParameters> parametersClass = stackParameterMap.get(command.getStackName());
         final Map<String, String> parameters;
+
+        // Make sure the given AmiId is for CMS component. Check if it contains required tag
+        if (!ec2Service.isAmiWithTagExist(command.getAmiId(),
+                                          ConfigConstants.CERBERUS_AMI_TAG_NAME,
+                                          ConfigConstants.CMS_AMI_TAG_VALUE)) {
+            throw new IllegalStateException("AMI check failed!");
+        }
 
         if (parametersClass != null) {
             parameters = getUpdateLaunchConfigParameters(command.getStackName(), command, parametersClass);
