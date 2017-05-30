@@ -129,7 +129,7 @@ public class UpdateStackOperation implements Operation<UpdateStackCommand> {
                                               command.getAmiId(),
                                               ConfigConstants.CERBERUS_AMI_TAG_NAME,
                                               stackAmiTagValueMap.get(command.getStackName()))) {
-                throw new IllegalStateException("AMI check failed!");
+                throw new IllegalStateException("AMI check failed!. Given AMI ID does not contain cerberus tag 'cerberus_component' with stack name");
 
         }
 

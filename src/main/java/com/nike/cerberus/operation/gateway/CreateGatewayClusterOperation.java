@@ -99,7 +99,7 @@ public class CreateGatewayClusterOperation implements Operation<CreateGatewayClu
         if (!ec2Service.isAmiWithTagExist(command.getStackDelegate().getAmiId(),
                                           ConfigConstants.CERBERUS_AMI_TAG_NAME,
                                           ConfigConstants.GATEWAY_AMI_TAG_VALUE)) {
-            throw new IllegalStateException("AMI check failed!");
+            throw new IllegalStateException("AMI check failed!. Given AMI ID does not contain cerberus tag 'cerberus_component' with stack name");
         }
 
         final GatewayParameters gatewayParameters = new GatewayParameters()
