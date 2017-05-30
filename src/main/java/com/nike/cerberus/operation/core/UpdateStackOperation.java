@@ -125,7 +125,7 @@ public class UpdateStackOperation implements Operation<UpdateStackCommand> {
 
         // Make sure the given AmiId is for this component. Check if it contains required tag
         // There is no AMI for Base.
-        if ( StackName.BASE != command.getStackName() && !ec2Service.isAmiWithTagExist(
+        if ( !command.noAmiCheck() && StackName.BASE != command.getStackName() && !ec2Service.isAmiWithTagExist(
                                               command.getAmiId(),
                                               ConfigConstants.CERBERUS_AMI_TAG_NAME,
                                               stackAmiTagValueMap.get(command.getStackName()))) {
